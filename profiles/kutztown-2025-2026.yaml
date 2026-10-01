@@ -1,0 +1,28 @@
+# Profile: Kutztown University of Pennsylvania, 2025-2026 Undergraduate Catalog
+# Only settings that differ from the defaults are listed here.
+
+organization:
+  name: Kutztown University of Pennsylvania
+  ctid: ce-e483e7b6-9dd9-4588-a4f8-1d57ee313842
+
+catalog:
+  url: https://www.kutztown.edu/Departments-Offices/A-F/Catalog/Documents/KU-Undergraduate-Catalog-2025-2026.pdf
+  version_identifier: 2025-2026 Undergraduate Catalog
+
+extraction:
+  # Course descriptions start at the 18pt "Course Descriptions" heading (p. 343) and
+  # end before "General Information" (p. 677). Auto-detection finds both.
+  section_end_pattern: ^General Information$
+  # Every course carries the same pointer sentence instead of real prerequisites.
+  discard_field_patterns:
+    - current prerequisites for this course can be found in the online Course Description
+
+credits:
+  # Course entries have no credits; program requirement lists do, e.g.
+  # "ARTH 302: Early Christian and Byzantine Art* (3 credits)". KU uses "credits (s.h.)".
+  default_unit_type: SemesterHour
+  cross_reference: true
+
+transform:
+  # KU has no per-course web pages, so every course links to the catalog PDF.
+  subject_webpage_template: "{catalog_url}"

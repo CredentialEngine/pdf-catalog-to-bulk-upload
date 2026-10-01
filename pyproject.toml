@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pdf-catalog-to-bulk-upload"
+version = "0.1.0"
+description = "Turn PDF course catalogs into Credential Publisher bulk upload sheets (CTDL Learning Opportunities)"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+dependencies = ["pymupdf>=1.24", "pyyaml>=6.0"]
+keywords = ["CTDL", "Credential Engine", "Credential Registry", "course catalog", "bulk upload"]
+
+[project.optional-dependencies]
+pdfplumber = ["pdfplumber>=0.11"]
+dev = ["pytest>=7"]
+
+[project.scripts]
+pdf-catalog-bu = "pdf_catalog_bu.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+pdf_catalog_bu = ["config_template.yaml"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]

@@ -1,0 +1,64 @@
+# pdf-catalog-bu configuration ("profile")
+# Only include settings you want to change; everything else uses built-in defaults.
+# Full reference: README.md -> "Configuration reference".
+
+organization:
+  name: Example Community College
+  ctid: ce-00000000-0000-0000-0000-000000000000   # REQUIRED: your organization's CTID
+
+catalog:
+  url: https://catalog.example.edu/              # -> In Catalog
+  version_identifier: 2025-2026 Catalog          # -> Version Identifier
+  language: English
+
+extraction:
+  # Leave pages empty to auto-detect the course section from its heading.
+  pages:                                          # e.g. "343-676"
+  section_start_pattern: ^Course Descriptions?$
+  section_end_pattern:                            # e.g. ^General Information$
+  # Course heading regex. Must define named groups prefix, number, title;
+  # optional group credits. Run `pdf-catalog-bu inspect` to see your catalog's lines.
+  # heading_pattern: '^(?P<prefix>[A-Z]{2,4})\s(?P<number>\d{3})\s-\s(?P<title>.+?)\s\((?P<credits>[\d-]+) credits?\)$'
+  require_bold_heading: true                      # false if headings aren't bold in the PDF
+  subject_heading_min_size: 14                    # bold lines this size or larger = subject areas
+  drop_line_patterns: []                          # running headers/footers, e.g. ['^Page \d+$']
+  label_fields:                                   # "Label: text" lines -> separate fields
+    Pre-?requisites?: prerequisites
+    Co-?requisites?: corequisites
+    Credits?|Credit Hours|Semester Hours: credits
+  discard_field_patterns: []                      # field values to treat as boilerplate
+  description_strip_patterns: []                  # regexes removed from descriptions
+
+credits:
+  default_unit_type: SemesterHour                 # SemesterHour | QuarterHour | ContactHour | CEU
+  from_description: true
+  cross_reference: true                           # use credits stated in program requirement lists
+  default_value:                                  # e.g. 3 (applied when nothing found; use with care)
+
+transform:
+  template_csv:                                   # Publisher template CSV; sets output columns
+  include_ctid: true                              # CTID column: "ce-" + random UUID v4
+  ctid_crosswalk:                                 # previous bulk upload CSV: reuse its CTIDs
+  drop_empty_columns: true                        # remove columns with no values
+  # Placeholders: {code} {code_slug} {prefix} {number} {title} {catalog_url} {org_ctid}
+  subject_webpage_template: "{catalog_url}"
+  external_identifier_template: "{code}"
+  name_template: "{title}"
+  version_identifier_template: "Catalog Version~{version}"
+  subjects_from_subject_area: true
+  keywords_from_subject_area: false
+  include_prerequisites_as_condition: false
+  fixed_values:
+    Life Cycle Status Type: Active
+    Offered By: same as owner
+  # Custom extraction targets: fill any bulk upload column from extracted text.
+  custom_fields: []
+  # - column: Delivery Type
+  #   source: description          # any intermediate column: description, title, prerequisites, ...
+  #   pattern: '\b(fully )?online\b'
+  #   value: OnlineOnly            # constant when matched (else the 'value' group, group 1, or match)
+  # - column: Keywords
+  #   source: description
+  #   pattern: '\b(writing intensive|service learning)\b'
+  #   multiple: true               # collect all matches, pipe-delimited
+  #   append: true                 # add to an existing value instead of replacing it
