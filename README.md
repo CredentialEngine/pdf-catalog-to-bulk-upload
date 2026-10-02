@@ -55,6 +55,72 @@ Common settings can also be passed on the command line:
 
 ## How it works
 
+The diagram shows what happens during `pdf-catalog-bu run`. The `extract` and
+`transform` commands run stage 1 and stage 2 separately; the numbered sections
+below describe each part in more detail.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User
+    participant CLI as pdf-catalog-bu<br/>(cli.py, pipeline.py)
+    participant Config as config.py
+    participant Reader as pdf_reader.py
+    participant Parser as parser.py
+    participant Credits as credits.py
+    participant Transform as transform.py<br/>ctid.py
+    participant QA as qa.py
+    participant Out as Output folder
+
+    User->>CLI: pdf-catalog-bu run catalog.pdf -c profile.yaml
+    CLI->>Config: load_config(profile + command-line overrides)
+    Config-->>CLI: merged settings, validation warnings
+
+    rect rgba(120, 160, 220, 0.12)
+    Note over CLI,Credits: Stage 1 - extract courses from the PDF
+    CLI->>Reader: read_pages(pdf)
+    Reader-->>CLI: lines with page, position, bold, font size
+    CLI->>Reader: clean(lines)
+    Note right of Reader: Drops duplicate text layers,<br/>repeated page tops, and<br/>header/footer patterns
+    Reader-->>CLI: cleaned lines
+    CLI->>Parser: find_section(lines)
+    Parser-->>CLI: course-description section bounds
+    CLI->>Parser: parse(section lines, lines outside the section)
+    Parser->>Credits: build_cross_reference(lines outside the section)
+    Credits-->>Parser: course code to credit values (program lists)
+    loop Each course heading in the section
+        Parser->>Parser: collect title, subject area,<br/>description, labeled fields
+        Parser->>Credits: resolve(heading, label, description, cross-reference)
+        Credits-->>Parser: credit min/max, unit, source
+    end
+    Parser-->>CLI: course rows
+    CLI->>Out: courses_extracted.csv
+    end
+
+    Note over User,Out: Optional checkpoint: edit courses_extracted.csv, then run<br/>pdf-catalog-bu transform to redo only stage 2
+
+    rect rgba(120, 200, 150, 0.12)
+    Note over CLI,QA: Stage 2 - transform and check
+    CLI->>Transform: to_bulk_upload(course rows)
+    opt Publisher template given (--template)
+        Transform->>Transform: take columns and order from the template header
+    end
+    opt CTID crosswalk given
+        Transform->>Transform: reuse existing CTIDs by External Identifier
+    end
+    Transform->>Transform: new CTIDs (ce- + UUID v4), fixed values,<br/>URL templates, custom fields
+    Transform-->>CLI: bulk upload rows, row notes
+    CLI->>QA: run_qa(course rows, upload rows)
+    QA-->>CLI: issues (required fields, formats, credits, duplicates)
+    CLI->>Transform: drop_empty_columns(upload rows)
+    Transform-->>CLI: columns that have values
+    CLI->>Out: course_bulk_upload.csv, qa_report.csv, qa_summary.md
+    end
+
+    CLI-->>User: QA summary
+    User->>User: Review, then upload in the Credential Publisher
+```
+
 **1. Reading the PDF.** Text is read line by line along with font size and weight,
 which are strong signals in most catalogs: course headings are usually bold and
 subject areas ("Accounting", "Biology") are larger bold headings.
