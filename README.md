@@ -1,4 +1,15 @@
-# pdf-catalog-to-bulk-upload
+# pdf-catalog-to-bulk-upload (Prototype)
+
+> [!WARNING]
+> **Prototype for demonstration only. Not for production use.**
+>
+> This project is intended solely as a demonstration of the art of the possible. It is a prototype for exploring potential approaches and capabilities, not a production-ready application. The code has not been formally reviewed, tested, or vetted by Credential Engine for accuracy, security, reliability, or suitability for implementation.
+>
+> In particular:
+> - Extraction is **rule-based** (regex patterns in a per-institution profile) and must be tuned for each catalog. Courses can be missed, merged or split.
+> - Credits found by cross-reference or in descriptions are **heuristics**.
+> - The automated tests use **only synthetic lines**, not real catalogs.
+> - Every bulk upload sheet **must be reviewed by a person**, using the QA report, before it is published to the Registry.
 
 Turn a **PDF course catalog** into **Credential Publisher bulk upload sheets**.
 
