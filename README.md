@@ -315,7 +315,7 @@ notes. See `examples/kutztown/qa_summary.md`.
 The default backend, [PyMuPDF](https://pymupdf.readthedocs.io/), is fast (about
 5 seconds for a 700-page catalog) and handles duplicate text layers well. It is
 licensed under **AGPL-3.0** (commercial licenses are available from Artifex). This
-project is MIT licensed, but anyone redistributing it together with PyMuPDF must also
+project is Apache-2.0 licensed, but anyone redistributing it together with PyMuPDF must also
 meet PyMuPDF's license terms.
 
 An alternative backend uses [pdfplumber](https://github.com/jsvine/pdfplumber)
